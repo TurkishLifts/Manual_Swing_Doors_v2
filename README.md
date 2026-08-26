@@ -7,7 +7,7 @@ Important: You must set every door timer to math.huge, as the plugin automatical
 To build the plugin from scratch, use:
 
 ```bash
-rojo build plugin.project.json -o Dist/Manual_Swing_Doors.rbxm
+rojo build plugin.project.json -o Dist/Manual_Swing_Doors_v2.rbxm
 ```
 
 Next, open `Manual_Swing_Doors_v2.rbxm` in Roblox Studio and start the Rojo server:
