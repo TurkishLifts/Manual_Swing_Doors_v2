@@ -1,4 +1,4 @@
-local config = {
+return {
 	DetectorType = "DragDetector", -- DragDetector | ClickDetector | None
 	NewDragDetector = false, -- Enables the new modulux DragDetector style on the doors.
 	OpenTime = 3, -- How long the door stays open - Seconds
@@ -8,16 +8,17 @@ local config = {
 
 	LockType = "BeforeClose", -- AfterClose | BeforeClose
 	UnlockType = "BeforeOpen", -- BeforeOpen | AfterOpen
+	AfterCloseLockRate = 10, -- Dont change if you dont know what you're doing
 
 	OpenSpeed = 1,  -- How fast the door opens - Seconds
 	CloseSpeed = 1, -- How fast the door closes - Seconds
 	
-	DoorSoundsEnabled = false, -- Enables door sounds.
+	DoorSoundsEnabled = true, -- Enables door sounds.
 	OpenSound = 123456789, -- Open sound - Asset ID
 	ClosingSound = 123456789, -- Open sound - Asset ID
 	ClosedSound = 123456789, -- Plays when the swing door is closed
-	LockSound = 123456789, -- Plays when the swing door is locked
-	UnlockSound = 123456789, -- Plays when the swing door is unlocked
+	LockSound = 99880731087615, -- Plays when the swing door is locked
+	UnlockSound = 111085730363760, -- Plays when the swing door is unlocked
 	DoorVolume = 1, -- Volume of the door sounds
 	DoorRollOffMaxDistance = 15, -- Maximum distance where the door sounds could be heard.
 	
@@ -43,5 +44,3 @@ local config = {
 
 	}
 }
-
-return config

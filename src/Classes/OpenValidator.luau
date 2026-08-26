@@ -42,8 +42,4 @@ function OpenValidator:Validate(Params : {DoorModel : Model, Nitwit: boolean})
     return true
 end
 
-function OpenValidator:SetLocked(NewLocked : boolean)
-    self.Locked = NewLocked
-end
-
 return OpenValidator
