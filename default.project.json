@@ -1,0 +1,36 @@
+{
+  "name": "ManualSwingDoors_v2",
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {
+      "Elevator": {
+        "$className": "Model",
+        "Controller": {
+          "$className": "Script",
+          "Plugins": {
+            "$className": "Folder",
+            "Manual_Swing_Doors_v2": {
+              "$path": "src",
+              "Swing_API": {
+                  "$className": "BindableEvent"
+              },
+              "Control_API": {
+                  "$className": "BindableEvent"
+              },
+              "Dependencies": {
+                "$path": "Packages"
+              },
+              "Client": {
+                "$path": "src-client/Client.server.luau",
+                "$properties": {
+                  "RunContext": "Client",
+                  "Disabled": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
