@@ -13,7 +13,7 @@ return {
 	OpenSpeed = 1,  -- How fast the door opens - Seconds
 	CloseSpeed = 1, -- How fast the door closes - Seconds
 	
-	DoorSoundsEnabled = true, -- Enables door sounds.
+	DoorSoundsEnabled = false, -- Enables door sounds.
 	OpenSound = 123456789, -- Open sound - Asset ID
 	ClosingSound = 123456789, -- Open sound - Asset ID
 	ClosedSound = 123456789, -- Plays when the swing door is closed
@@ -36,11 +36,11 @@ return {
 	EnableBypass = true, -- Gives the ability to unlock swingdoors via Triangle Key or Safety Contact.
 	
 	CustomFloorConfig = {
-
+		--[[
 		["Floor_0"] = {
 			DoorRotation = "Clockwise",
 			OpenSpeed = 1,
 		}
-
+		--]]
 	}
 }
