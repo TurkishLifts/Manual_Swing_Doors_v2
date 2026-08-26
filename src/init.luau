@@ -25,14 +25,16 @@ function module.init(controller : {})
     assert(Classes,"Classes folder not found!")
 
     local Dependencies : Folder = script:FindFirstChild("Dependencies")
-
+    if not Dependencies then 
+        Dependencies = ReplicatedStorage:FindFirstChild("MSDv2_Dependencies")
+    end
     assert(Dependencies,"Dependencies folder not found!")
 
     local sift = require(Dependencies["sift"])
     local JanitorModule = require(Dependencies["janitor"])
     local Freeze = require(Dependencies["Freeze"])
     local Janitor = JanitorModule.new()
-    
+
     local DoorClass = require(script.Classes.Door)
     local Config = require(script.Config)
 

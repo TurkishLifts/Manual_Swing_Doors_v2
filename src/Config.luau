@@ -4,7 +4,7 @@ return {
 	OpenTime = 3, -- How long the door stays open - Seconds
 	MaxActivationDistance = 10, -- The max distance the elevator door can be opened.
 	CloseWhileOpen = true, -- Enables closing the door when it is open, by clicking it again.
-	DoorRotation = "Anticlockwise", -- Clockwise | Anticlockwise
+	DoorRotation = "Clockwise", -- Clockwise | Anticlockwise
 
 	LockType = "BeforeClose", -- AfterClose | BeforeClose
 	UnlockType = "BeforeOpen", -- BeforeOpen | AfterOpen
