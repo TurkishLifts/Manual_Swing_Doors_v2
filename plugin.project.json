@@ -1,0 +1,16 @@
+{
+  "name": "Manual_Swing_Doors_v2",
+  "tree": {
+    "$path": "src",
+    "Dependencies": {
+    "$path": "Packages"
+    },
+    "Client": {
+    "$path": "src-client/Client.server.luau",
+    "$properties": {
+        "RunContext": "Client",
+        "Disabled": true
+    }
+    }
+  }
+}
