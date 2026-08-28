@@ -16,7 +16,7 @@ function Door.new(DoorData)
     DoorSound.Name = "Door_Sound"
     DoorSound.RollOffMaxDistance = DoorData.DoorRollOffMaxDistance or 15
     DoorSound.Volume = DoorData.DoorVolume or 1
-    DoorSound.Parent = NewDoor.DoorModel
+    DoorSound.Parent = NewDoor.DoorModel:FindFirstChildWhichIsA("BasePart",true)
     NewDoor.DoorSound = DoorSound
 
     NewDoor.Opened = false
@@ -100,7 +100,7 @@ function Door:PlaySound(SoundId: number)
         local DoorSound_New = Instance.new("Sound")
         DoorSound_New.Name = "Door_Sound"
         DoorSound_New.RollOffMaxDistance = self.DoorData.DoorRollOffMaxDistance or 15
-        DoorSound_New.Parent = self.DoorModel
+        DoorSound_New.Parent = self.DoorModel:FindFirstChildWhichIsA("BasePart",true)
         DoorSound_New.Volume = self.DoorData.DoorVolume or 1
         self.DoorSound = DoorSound_New
         DoorSound = DoorSound_New

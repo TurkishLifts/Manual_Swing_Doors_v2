@@ -1,7 +1,7 @@
 --[[
     Manual Swing Doors V2 | by: TurkishLifts
 
-        VERSION: v2.1.0 | DATE: 28/08/2026
+        VERSION: v2.1.1 | DATE: 28/08/2026
 ]]--
 --!nocheck
 
