@@ -39,5 +39,5 @@ dependencies = []
 
 [[package]]
 name = "turkishlifts/manualswingdoorsv2"
-version = "2.1.0"
+version = "2.1.1"
 dependencies = [["Freeze", "duckarmor/freeze@0.1.4"], ["goodsignal", "stravant/goodsignal@0.2.1"], ["janitor", "howmanysmall/janitor@1.18.3"], ["sift", "csqrl/sift@0.0.11"]]
