@@ -1,7 +1,7 @@
 --[[
     Manual Swing Doors V2 | by: TurkishLifts
 
-        VERSION: v2.0.0 | DATE: 27/08/2026
+        VERSION: v2.1.0 | DATE: 28/08/2026
 ]]--
 --!nocheck
 
@@ -25,9 +25,6 @@ function module.init(controller : {})
     assert(Classes,"Classes folder not found!")
 
     local Dependencies : Folder = script:FindFirstChild("Dependencies")
-    if not Dependencies then 
-        Dependencies = ReplicatedStorage:FindFirstChild("MSDv2_Dependencies")
-    end
     assert(Dependencies,"Dependencies folder not found!")
 
     local sift = require(Dependencies["sift"])
@@ -153,14 +150,14 @@ function module.init(controller : {})
                     if Door.Side == "L" then
                         table.insert(SwingDoorDatas, DoorClass.new(sift.Dictionary.merge({
                             DoorModel = Door.DoorModel,
-                            DoorRotation = LocalConfig.DoorRotation,
+                            DoorRotation = LocalConfig.DoorRotation or "Clockwise",
                             DoorSide = Door.Side,
                             Priority = "Primary",
                         },LocalConfig)))
                     else
                         table.insert(SwingDoorDatas, DoorClass.new(sift.Dictionary.merge({
                             DoorModel = Door.DoorModel,
-                            DoorRotation = LocalConfig.DoorRotation,
+                            DoorRotation = LocalConfig.DoorRotation or "Clockwise",
                             DoorSide = Door.Side,
                             Priority = "Secondary"
                         },LocalConfig)))
@@ -169,7 +166,7 @@ function module.init(controller : {})
             elseif #SwingDoors == 1 then
                 table.insert(SwingDoorDatas, DoorClass.new(sift.Dictionary.merge({
                     DoorModel = SwingDoors[1].DoorModel,
-                    DoorRotation = LocalConfig.DoorRotation,
+                    DoorRotation = LocalConfig.DoorRotation or "Clockwise",
                     Priority = "Primary",
                 },LocalConfig)))
             elseif #SwingDoors < 1 then
@@ -197,6 +194,134 @@ function module.init(controller : {})
                     end
                 end
 
+                local function HandleKey()
+                    if State.key_debounce then return end
+
+                    State.key_debounce = true
+
+                    State.Stopped = not State.Stopped
+                    if State.Stopped then
+                        if not SwingDoorData.Opened then
+                            SwingDoorData:Open()
+                        end
+
+                        local DoorSafetyLock = Freeze.Dictionary.getIn(controller, {"StatValues","DoorSafetyLock"})
+                        if DoorSafetyLock then
+                            controller.StatValues.DoorSafetyLock = false
+                        end
+
+                        if controller.UpdateStatValues then
+                            controller.UpdateStatValues()
+                        else
+                            warn("UpdateStatValues failed!")
+                        end
+
+                        API:Fire("Stop",true)
+
+                        local OpenInnerdoorsOnKey = Config.OpenInnerdoorsOnKey
+                        if OpenInnerdoorsOnKey == nil then
+                            OpenInnerdoorsOnKey = true
+                        end
+
+                        if OpenInnerdoorsOnKey then
+                            task.defer(function()							
+                                if controller.door_data then
+                                    for _, doorData in controller.door_data do
+                                        doorData.Disable(false)
+                                        local open_time = Freeze.Dictionary.getIn(controller, {"Config","doors","door_timers","open_no_call"}) or 1
+                                        doorData.Open({
+                                            open_time = open_time,
+                                            disable_safety_lock = true,
+                                            bypass_door_zone = true,
+                                            bypass_disabled_elevator = true,
+                                        })
+                                    end
+                                else
+                                    warn("door_data not found! opening innerdoors failed.")
+                                end
+                            end)
+                        end
+                    
+                        task.delay(1, function()
+                            State.key_debounce = false
+                        end)
+                    else
+                        if SwingDoorData.Opened then
+                            SwingDoorData:Close()
+                        end
+
+                        local FloorNumber = tonumber( (Floor.Name:gsub("Floor_","")) )
+                        local LiftDest = Freeze.Dictionary.getIn(controller, {"StatValues","Destination"}) or FloorNumber
+                        local NearFloor = controller.GetNearestFloor()
+                        if not NearFloor then
+                            warn("NearFloor is nil!")
+                            State.key_debounce = false
+                            return
+                        end
+
+                        local CurrentFloor = FloorValue.Value
+                        
+                        local CurrentPos = Freeze.Dictionary.getIn(controller, {"CurrentPosition","Position"})
+                        local LevelPos = Freeze.Dictionary.getIn(controller, {"Level","Position"})
+                        local PlatformPos = Freeze.Dictionary.getIn(controller, {"Platform","Position"})
+
+                        if not CurrentPos or not LevelPos or not PlatformPos then
+                            warn("CurrentPos, LevelPos, or PlatformPos not found!")
+                            State.key_debounce = false
+                            return
+                        end
+                        
+                        local LevelPosition = CurrentPos.Y + (LevelPos.Y - PlatformPos.Y)
+                        SwingDoorData:SetLocked(true)
+
+                        local NearFloorLevelPos = Freeze.Dictionary.getIn(NearFloor, {"Level","Position"})
+
+                        if not NearFloorLevelPos then
+                            warn("NearFloorLevelPos not found!")
+                            State.key_debounce = false
+                            return
+                        end
+
+                        local isInDoorZone = math.abs(NearFloorLevelPos.Y - LevelPosition) < 0.5
+
+                        local success,AllDoorStates = pcall(function()
+                            return controller.CheckAllDoorStates("Closed")
+                        end)
+
+                        if not success then
+                            warn("Door state check failed!")
+                            State.key_debounce = false
+                            return
+                        end
+
+                        if AllDoorStates and not isInDoorZone then
+                            controller.StatValues.Floor = NearFloor.FloorNumber + 1
+                        end
+
+                        local Dest
+                        if LiftDest == FloorNumber then
+                            if Floors:FindFirstChild("Floor_"..tostring(CurrentFloor + 1)) then
+                                Dest = CurrentFloor + 1
+                            elseif Floors:FindFirstChild("Floor_"..tostring(CurrentFloor - 1)) then
+                                Dest = CurrentFloor - 1
+                            else
+                                Dest = nil
+                            end
+                        else
+                            Dest = LiftDest
+                        end
+
+                        if Dest ~= nil then 
+                            API:Fire("AddCarCall", { call = Dest })
+                        end  
+                            
+                        API:Fire("Stop",false)
+
+                        task.delay(1, function()
+                            State.key_debounce = false
+                        end)
+                    end
+                end
                 for _, DoorPart in ipairs(SwingDoorData.DoorModel:GetChildren()) do
                     if DoorPart:IsA("BasePart") then
                         Janitor:Add(
@@ -211,41 +336,7 @@ function module.init(controller : {})
                                     end)
 
                                     if Part.Parent.Name == "Triangle Key" then
-                                        if State.key_debounce then return end
-
-                                        State.key_debounce = true
-                                        task.delay(0.5, function()
-                                            State.key_debounce = false
-                                        end)
-                                        State.Stopped = not State.Stopped
-                                        if State.Stopped then
-                                            if not SwingDoorData.Opened then
-                                                SwingDoorData:Open()
-                                            end
-                                            controller.StatValues.DoorSafetyLock = false
-                                            controller.UpdateStatValues()
-                                            
-                                            API:Fire("Stop",true)
-                                            
-                                            if Config.OpenInnerdoorsOnKey then
-                                                task.defer(function()							
-                                                    for _, doorData in controller.door_data do
-                                                        doorData.Disable(false)
-                                                        doorData.Open({
-                                                            open_time = controller.Config.doors.door_timers.open_no_call,
-                                                            disable_safety_lock = true,
-                                                            bypass_door_zone = true,
-                                                            bypass_disabled_elevator = true,
-                                                        })
-                                                    end
-                                                end)
-                                            end
-                                        else
-                                           if SwingDoorData.Opened then
-                                                SwingDoorData:Close()
-                                           end
-                                            API:Fire("Stop",false)
-                                        end
+                                        HandleKey()
                                     elseif Part.Parent.Name == "Safety Contact" then
                                         SwingDoorData:Toggle(true)
                                     end
@@ -257,7 +348,7 @@ function module.init(controller : {})
                         )
                     end
                 end
-                SwingDoorData.IsOpened:Connect(function()
+                SwingDoorData.IsOpening:Connect(function()
                     API:Fire('door_signal', {
                         sides = 'all', 
                         request = 'open' 
@@ -298,7 +389,8 @@ function module.init(controller : {})
 
                 if Config.OpenDoorOnArrive then
                     local FloorName = `Floor_{FloorValue.Value}`
-                    task.wait(Config.OpenDoorOnArriveDelay)
+                    local Delay = Config.OpenDoorOnArriveDelay or 0.5
+                    task.wait(Delay)
                     if `Floor_{FloorValue.Value}` ~= FloorName then
                         return
                     end

@@ -1,3 +1,4 @@
+--!nocheck
 local Door = {}
 Door.__index = Door
 
@@ -13,8 +14,8 @@ function Door.new(DoorData)
 
     local DoorSound = Instance.new("Sound")
     DoorSound.Name = "Door_Sound"
-    DoorSound.RollOffMaxDistance = DoorData.DoorRollOffMaxDistance
-    DoorSound.Volume = DoorData.DoorVolume
+    DoorSound.RollOffMaxDistance = DoorData.DoorRollOffMaxDistance or 15
+    DoorSound.Volume = DoorData.DoorVolume or 1
     DoorSound.Parent = NewDoor.DoorModel
     NewDoor.DoorSound = DoorSound
 
@@ -24,10 +25,23 @@ function Door.new(DoorData)
     NewDoor.Debounce = false
     NewDoor.Locked = false
     NewDoor.Priority = DoorData.Priority
-    NewDoor.OpenSpeed = DoorData.OpenSpeed
-    NewDoor.CloseSpeed = DoorData.CloseSpeed
-    NewDoor.OpenTime = DoorData.OpenTime
-    NewDoor.IsOpened = Signal.new()
+
+    NewDoor.OpenSpeed = DoorData.OpenSpeed or 1
+    if NewDoor.OpenSpeed <= 0 then
+        NewDoor.OpenSpeed = 1
+    end
+
+    NewDoor.CloseSpeed = DoorData.CloseSpeed or 1
+    if NewDoor.CloseSpeed <= 0 then
+        NewDoor.CloseSpeed = 1
+    end
+
+    NewDoor.OpenTime = DoorData.OpenTime or 3
+    if NewDoor.OpenTime < 0 then
+        NewDoor.OpenTime = 0
+    end
+
+    NewDoor.IsOpening = Signal.new()
     
     local startPivot = NewDoor.DoorModel:GetPivot()
     NewDoor.startPivot = startPivot
@@ -57,7 +71,7 @@ function Door.new(DoorData)
     if DoorData.DetectorType == "DragDetector" then
         local DragDetector = Instance.new("DragDetector")
         DragDetector.DragStyle = Enum.DragDetectorDragStyle.Scriptable
-        DragDetector.MaxActivationDistance = DoorData.MaxActivationDistance
+        DragDetector.MaxActivationDistance = DoorData.MaxActivationDistance or 10
 
         if DoorData.NewDragDetector == true then
             DragDetector.ActivatedCursorIcon = "rbxassetid://135040650935313"
@@ -68,7 +82,7 @@ function Door.new(DoorData)
         NewDoor.Detector = DragDetector
     elseif DoorData.DetectorType == "ClickDetector" then
         local ClickDetector = Instance.new("ClickDetector")
-        ClickDetector.MaxActivationDistance = DoorData.MaxActivationDistance
+        ClickDetector.MaxActivationDistance = DoorData.MaxActivationDistance or 10
         ClickDetector.Parent = NewDoor.DoorModel
         NewDoor.Detector = ClickDetector
     end
@@ -77,15 +91,17 @@ function Door.new(DoorData)
 end
 
 function Door:PlaySound(SoundId: number)
+    if not SoundId or SoundId == 0 then return end
+
     if self.DoorData.DoorSoundsEnabled == false then return end
 
     local DoorSound : Sound = self.DoorSound
     if not DoorSound then
         local DoorSound_New = Instance.new("Sound")
         DoorSound_New.Name = "Door_Sound"
-        DoorSound_New.RollOffMaxDistance = self.DoorData.DoorRollOffMaxDistance
+        DoorSound_New.RollOffMaxDistance = self.DoorData.DoorRollOffMaxDistance or 15
         DoorSound_New.Parent = self.DoorModel
-        DoorSound_New.Volume = self.DoorData.DoorVolume
+        DoorSound_New.Volume = self.DoorData.DoorVolume or 1
         self.DoorSound = DoorSound_New
         DoorSound = DoorSound_New
     end
@@ -105,9 +121,9 @@ function Door:Open()
 
     if self.Debounce or self.Opened then return end
 
-    self.IsOpened:Fire()
-    
     self.Debounce = true
+
+    self.IsOpening:Fire()
 
     AnimationAPI:FireAllClients({
         Animation = "Opening",
@@ -152,7 +168,10 @@ function Door:Close()
 end
 
 function Door:Toggle(KEY : boolean)
-    if (Validator:Validate({DoorModel = self.DoorModel, Nitwit = false}) and self.Locked == false) or KEY then
+    local success, result = pcall(function()
+        return Validator:Validate({DoorModel = self.DoorModel, Nitwit = false})
+    end)
+    if ((success and result and self.Locked == false) or KEY) then
         if self.Opened == true then
             if self.DoorData.CloseWhileOpen == true then
                 self.CloseRequested = true
