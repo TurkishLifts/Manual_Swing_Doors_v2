@@ -1,7 +1,7 @@
 --[[
     Manual Swing Doors V2 | by: TurkishLifts
 
-        VERSION: v2.1.1 | DATE: 28/08/2026
+        VERSION: v2.1.2 | DATE: 8/09/2026
 ]]--
 --!nocheck
 
@@ -423,11 +423,11 @@ function module.init(controller : {})
                         end
                         if allClosed then
                             if HasCalls() then
+                                task.wait(Config.CloseIdle or 0.5)
+
                                 if Config.LockType == "BeforeClose" then
                                     LockDoors(FloorData)
                                 end
-
-                                task.wait(Config.CloseIdle or 0.5)
 
                                 API:Fire('door_signal', {
                                     sides = 'all', 
