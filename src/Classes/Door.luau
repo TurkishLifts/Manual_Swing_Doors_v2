@@ -134,9 +134,10 @@ function Door:Open()
     })
 
     self:PlaySound(self.DoorData.OpenSound)
+    self.Opened = true
+    
     task.wait(self.OpenSpeed)
 
-    self.Opened = true
     self.DoorModel:PivotTo(self.targetPivot)
     self.Debounce = false
 end
@@ -173,6 +174,7 @@ function Door:Toggle(KEY : boolean)
     end)
     if ((success and result and self.Locked == false) or KEY) then
         if self.Opened == true then
+            if self.Debounce then return end 
             if self.DoorData.CloseWhileOpen == true then
                 self.CloseRequested = true
             end

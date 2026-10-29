@@ -1,7 +1,7 @@
 --[[
     Manual Swing Doors V2 | by: TurkishLifts
 
-        VERSION: v2.1.2 | DATE: 8/09/2026
+        VERSION: v2.1.3 | DATE: 29/10/2026
 ]]--
 --!nocheck
 
@@ -425,6 +425,17 @@ function module.init(controller : {})
                             if HasCalls() then
                                 task.wait(Config.CloseIdle or 0.5)
 
+                                if generation ~= State.idle_generation then break end
+
+                                local stillClosed = true
+                                for _,Door in ipairs(FloorData.Doors) do
+                                    if Door.Opened or Door.Debounce then
+                                        stillClosed = false
+                                        break
+                                    end
+                                end
+                                if not stillClosed then continue end
+                                
                                 if Config.LockType == "BeforeClose" then
                                     LockDoors(FloorData)
                                 end
